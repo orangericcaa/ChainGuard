@@ -1,0 +1,23 @@
+services:
+  langflow:
+    image: langflowai/langflow:1.2.0
+    container_name: langflow
+    restart: unless-stopped
+    ports:
+      - "192.168.44.136:7860:7860"
+    env_file:
+      - .env
+    environment:
+      - LANGFLOW_HOST=0.0.0.0
+      - LANGFLOW_PORT=7860
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "1"
