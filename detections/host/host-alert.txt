@@ -1,0 +1,18 @@
+=== host-alert.txt ===
+Tool: host_monitor.py (self-written Python monitor)
+Method: Snapshot comparison - pre-attack baseline vs post-attack
+Detection: Canary file poc-canary.txt in container /tmp
+
+=== Detection details ===
+Baseline: 3 processes, 0 /tmp files
+Post-attack: 3 processes, 1 /tmp file
+New file: poc-canary.txt
+Canary match: TRUE
+
+=== Anomalies found ===
+1. Changed/new files in container /tmp: poc-canary.txt
+2. Canary indicator file(s) detected: poc-canary.txt
+
+Note: auditd cannot trace syscalls across PID namespaces on this system.
+This host_monitor.py uses /proc inspection + Docker overlay filesystem
+checks as an alternative host-level detection method.

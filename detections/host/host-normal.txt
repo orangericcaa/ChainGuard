@@ -1,0 +1,8 @@
+=== host-normal.txt ===
+Tool: host_monitor.py (self-written Python monitor)
+Method: Snapshot /proc process tree + Docker overlay /tmp inspection
+Detection: No anomalies in normal Langflow operation
+
+Baseline: 3 langflow processes, 0 files in container /tmp
+Normal request: POST /api/v1/validate/code with standard Python
+Result: No new processes or files detected
