@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-07-07T15:17:15.236515+0800",
+  "event_type": "alert",
+  "alert": {
+    "action": "allowed",
+    "gid": 1,
+    "signature_id": 2025001,
+    "rev": 1,
+    "signature": "CHAINguard-B Langflow CVE-2025-3248 RCE attempt",
+    "category": "Attempted Administrator Privilege Gain",
+    "severity": 1
+  },
+  "http": {
+    "hostname": "192.168.44.136",
+    "http_port": 7860,
+    "url": "/api/v1/validate/code",
+    "http_user_agent": "python-requests/2.25.1",
+    "http_content_type": "application/json",
+    "http_method": "POST",
+    "protocol": "HTTP/1.1",
+    "status": 200,
+    "length": 0
+  },
+  "flow": {
+    "pkts_toserver": 5,
+    "pkts_toclient": 4,
+    "bytes_toserver": 943,
+    "bytes_toclient": 397,
+    "start": "2026-07-07T15:17:15.213430+0800"
+  }
+}
