@@ -1,0 +1,23 @@
+# PoC Canary Validation — 3 Consecutive Successes
+# Timestamp: 2026-07-07 B2 verification
+
+Each canary run:
+  1. Sends POST /api/v1/validate/code with decorator injection payload
+  2. Payload writes event_id + hostname + whoami + POC-CANARY-SUCCESS to /tmp/poc-canary.txt
+  3. Verified via docker exec langflow cat /tmp/poc-canary.txt
+
+Run 1: event_id=7712e8e0-... hostname=6a5bdd78fe9b whoami=user → SUCCESS
+Run 2: event_id=11510acf-... hostname=6a5bdd78fe9b whoami=user → SUCCESS
+Run 3: event_id=f649eb9e-... hostname=6a5bdd78fe9b whoami=user → SUCCESS
+
+Result: 3/3 success. RCE confirmed, stable exploit.
+
+Container context:
+  hostname: 6a5bdd78fe9b
+  uid:      uid=1000(user) gid=0(root) groups=0(root)
+  user:     user (NOT root)
+  pwd:      /app
+  HOME:     /app/data
+
+Impact boundary: Container-level RCE only. NOT host root.
+Escape risk: LOW (seccomp active, apparmor enforced, no privileged, no docker.sock)

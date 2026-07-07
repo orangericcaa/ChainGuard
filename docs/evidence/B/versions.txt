@@ -1,0 +1,26 @@
+# B Node Environment Versions
+# Collected: 2026-07-07 B0 phase
+
+OS:       Ubuntu 22.04.5 LTS (jammy)
+Kernel:   6.8.0-90-generic
+CPU:      2 cores x86_64
+Memory:   3.8 GB
+Disk:     39 GB (13 GB free)
+
+Docker:   28.5.1
+Compose:  v2.40.0
+Git:      2.34.1
+curl:     7.81.0
+auditd:   1:3.0.7 (active)
+Suricata: 6.0.4 RELEASE
+Python:   3.10.12
+requests: 2.25.1
+
+Network interfaces:
+  ens33: 192.168.44.136/24 (development)
+  ens37: 192.168.242.138/24 (external)
+  br-*:  Docker bridge
+
+Lab networks (pending P1):
+  vmnet1: 10.10.10.0/24 (A ↔ B)
+  vmnet2: 10.20.20.0/24 (B ↔ C)

@@ -1,0 +1,17 @@
+# Langflow Service Health Check
+# Timestamp: 2026-07-07 B1 verification
+
+Container: langflow
+Image:     langflowai/langflow:1.2.0
+Digest:    sha256:1e9cfdb0e1565b1187bdd3c6849493ecbd81627645214ab0537d7cbcdbdb454a
+Port:      192.168.44.136:7860 (NOT 0.0.0.0)
+
+Health endpoint: GET /health → HTTP 200
+Healthcheck script: bash healthcheck.sh → exit 0
+
+Restart test: docker compose restart → 45s wait → healthcheck → exit 0
+
+Resources:
+  CPU limit: 1
+  Memory limit: 1 GB
+  Restart policy: unless-stopped
