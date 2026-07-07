@@ -50,3 +50,10 @@ labs/langflow/
 ├── healthcheck.sh    # Health check script
 └── README.md         # This file
 ```
+
+## Image Digest
+
+| Field | Value |
+|---|---|
+| RepoDigest | langflowai/langflow@sha256:1e9cfdb0e1565b1187bdd3c6849493ecbd81627645214ab0537d7cbcdbdb454a |
+| Image ID | sha256:3c41de86af41001f00cfa07384726a0246974a599f556ef658377d817a270a10 |
