@@ -1,0 +1,117 @@
+# ============================================================
+# custom.rules — 课题三 自写 Suricata 检测规则（≥8条）
+# 覆盖：扫描、SQL注入、XSS、文件包含、爆破、Webshell、数据外传、横向移动
+# ============================================================
+
+# --- 规则1: 水平端口扫描 ---
+alert tcp $EXTERNAL_NET any -> $HOME_NET any \
+  (msg:"CUSTOM-001 水平端口扫描检测"; \
+   flow:to_server; flags:S; \
+   threshold:type threshold, track by_src, count 20, seconds 5; \
+   classtype:attempted-recon; sid:1000001; rev:1;)
+
+# --- 规则2: SQL 注入攻击 ---
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-002 SQL注入攻击检测"; \
+   flow:to_server,established; \
+   http.uri; content:"union"; nocase; fast_pattern; \
+   http.uri; content:"select"; nocase; distance:0; \
+   classtype:web-application-attack; sid:1000002; rev:1;)
+
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-002b SQL注入-布尔盲注检测"; \
+   flow:to_server,established; \
+   http.uri; pcre:"/(\%27|')/i"; \
+   http.uri; pcre:"/(or|and)\s/i"; \
+   classtype:web-application-attack; sid:1000003; rev:1;)
+
+# --- 规则3: XSS 跨站脚本 ---
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-003 XSS跨站脚本检测"; \
+   flow:to_server,established; \
+   http.uri; content:"<script>"; nocase; \
+   classtype:web-application-attack; sid:1000004; rev:1;)
+
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-003b XSS-on事件检测"; \
+   flow:to_server,established; \
+   http.uri; pcre:"/(onerror|onload|onclick)\s*=/i"; \
+   classtype:web-application-attack; sid:1000005; rev:1;)
+
+# --- 规则4: 目录遍历/文件包含 ---
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-004 目录遍历攻击检测"; \
+   flow:to_server,established; \
+   http.uri; content:"../"; \
+   classtype:web-application-attack; sid:1000006; rev:1;)
+
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-004b 敏感文件读取检测"; \
+   flow:to_server,established; \
+   http.uri; pcre:"/(\/etc\/passwd|\/etc\/shadow|\.htpasswd|wp-config\.php)/i"; \
+   classtype:web-application-attack; sid:1000007; rev:1;)
+
+# --- 规则5: SSH 暴力破解 ---
+alert tcp $EXTERNAL_NET any -> $HOME_NET 22 \
+  (msg:"CUSTOM-005 SSH暴力破解检测"; \
+   flow:to_server,established; \
+   threshold:type both, track by_src, count 10, seconds 30; \
+   classtype:attempted-dos; sid:1000008; rev:1;)
+
+# --- 规则6: 数据外传（大流量出站） ---
+alert tcp $HOME_NET any -> $EXTERNAL_NET any \
+  (msg:"CUSTOM-006 可疑数据外传-大流量出站"; \
+   flow:to_server,established; \
+   flowbits:set,large_outbound; \
+   threshold:type threshold, track by_dst, count 5000, seconds 10; \
+   classtype:trojan-activity; sid:1000009; rev:1;)
+
+# --- 规则7: Webshell 上传 ---
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-007 Webshell上传检测"; \
+   flow:to_server,established; \
+   http.method; content:"POST"; nocase; \
+   http.request_body; content:"eval"; nocase; \
+   http.request_body; content:"base64_decode"; nocase; \
+   classtype:web-application-attack; sid:1000010; rev:1;)
+
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-007b PHP危险函数检测"; \
+   flow:to_server,established; \
+   http.uri; pcre:"/(system|exec|shell_exec|passthru|popen)\(/i"; \
+   classtype:web-application-attack; sid:1000011; rev:1;)
+
+# --- 规则8: 内网横向移动（SMB 扫描） ---
+alert tcp $HOME_NET any -> $HOME_NET 445 \
+  (msg:"CUSTOM-008 内网SMB横向移动检测"; \
+   flow:to_server,established; \
+   threshold:type threshold, track by_src, count 5, seconds 10; \
+   classtype:attempted-recon; sid:1000012; rev:1;)
+
+# --- 规则9: DNS 隧道/异常查询 ---
+alert dns $HOME_NET any -> any 53 \
+  (msg:"CUSTOM-009 DNS隧道检测-异常长域名"; \
+   dns.query; pcre:"/\.[a-z0-9]{50,}\./i"; \
+   classtype:trojan-activity; sid:1000013; rev:1;)
+
+# --- 规则10: 命令注入 ---
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-010 命令注入检测"; \
+   flow:to_server,established; \
+   http.uri; pcre:"/(\;|\||\x60|\$\().*(id|whoami|cat |ls |wget |curl )/i"; \
+   classtype:web-application-attack; sid:1000014; rev:1;)
+
+# --- 规则11: 目录爆破（大量 404） ---
+alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS \
+  (msg:"CUSTOM-011 目录爆破检测-大量404"; \
+   flow:to_server,established; \
+   http.stat_code; content:"404"; \
+   threshold:type threshold, track by_src, count 15, seconds 10; \
+   classtype:attempted-recon; sid:1000015; rev:1;)
+
+# --- 规则12: 反弹 Shell 特征（外联到非标准端口） ---
+alert tcp $HOME_NET any -> $EXTERNAL_NET ![80,443,53,22] \
+  (msg:"CUSTOM-012 可疑外联-反弹Shell特征"; \
+   flow:to_server,established; \
+   content:"|0d 0a|"; depth:4; \
+   classtype:trojan-activity; sid:1000016; rev:1;)

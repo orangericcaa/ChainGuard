@@ -1,0 +1,118 @@
+# 课题三 网络拓扑配置
+# 版本: v1.0
+
+topology:
+  name: "企业网络安全检测环境"
+  description: "4台服务器、2层网络、2级安全等级"
+
+networks:
+  - id: external
+    name: "外部网络(模拟互联网)"
+    cidr: "VMware NAT DHCP"
+    type: nat
+    security_level: untrusted
+
+  - id: dmz
+    name: "DMZ区(低安全区)"
+    cidr: "192.168.10.0/24"
+    type: host-only
+    vmnet: vmnet1
+    security_level: low
+
+  - id: internal
+    name: "内网区(高安全区)"
+    cidr: "192.168.20.0/24"
+    type: host-only
+    vmnet: vmnet2
+    security_level: high
+
+nodes:
+  - id: VM1
+    name: "Gateway/Firewall"
+    role: "网关+防火墙+IDS"
+    os: "Ubuntu Server 22.04"
+    memory: 4096
+    interfaces:
+      - name: eth0
+        network: external
+        ip: "DHCP (VMware NAT)"
+        note: "SSH管理/Suricata外网检测/出站上网"
+      - name: eth1
+        network: dmz
+        ip: "192.168.10.1/24"
+      - name: eth2
+        network: internal
+        ip: "192.168.20.1/24"
+    services:
+      - "Suricata IDS/IPS (双实例)"
+      - "iptables 防火墙"
+      - "Nginx 反向代理"
+      - "traffic_analyzer"
+      - "log_aggregator"
+      - "trace_engine"
+
+  - id: VM2
+    name: "Web Server"
+    role: "企业网站+博客"
+    os: "Ubuntu Server 22.04"
+    memory: 4096
+    interfaces:
+      - name: eth0
+        network: dmz
+        ip: "192.168.10.10/24"
+    services:
+      - "Nginx + PHP-FPM (含可检测漏洞)"
+      - "WordPress (博客/社交)"
+      - "Web Honeypot (高交互)"
+      - "host_monitor"
+
+  - id: VM3
+    name: "DB/File Server"
+    role: "数据库+文件共享+云盘"
+    os: "Ubuntu Server 22.04"
+    memory: 4096
+    interfaces:
+      - name: eth0
+        network: internal
+        ip: "192.168.20.10/24"
+    services:
+      - "MySQL 8.0 (含可检测漏洞)"
+      - "Samba 文件共享"
+      - "Nextcloud 云共享"
+      - "Cowrie SSH Honeypot"
+      - "host_monitor"
+
+  - id: VM4
+    name: "Workstation"
+    role: "内部工作站"
+    os: "Ubuntu Server 22.04"
+    memory: 4096
+    interfaces:
+      - name: eth0
+        network: internal
+        ip: "192.168.20.20/24"
+    services:
+      - "Apache + 内部管理系统"
+      - "DB Honeypot (MySQL模拟)"
+      - "host_monitor"
+
+firewall_rules:
+  DMZ_rules:
+    - "允许 外网 → VM2:80,443 (Web 服务)"
+    - "允许 DMZ → 内网 VM3:3306 (DB 查询)"
+    - "允许 DMZ → 内网 VM3:445 (文件共享)"
+    - "拒绝 外网 → 内网 (全部)"
+    - "允许 内网 → 外网 (出站，ESTABLISHED)"
+
+detection_coverage:
+  network:
+    - "Suricata 外网实例: 监听 eth0(NAT), 检测来自宿主机的外部攻击"
+    - "Suricata 内网实例: 监听 eth2, 侧重横向移动/数据外传"
+  host:
+    - "host_monitor: 进程/文件/网络/持久化 四模块"
+  honeypot:
+    - "SSH蜜罐(VM3:22): 高交互, 记录攻击命令"
+    - "Web蜜罐(VM2:8080): 高交互, 记录HTTP攻击"
+    - "DB蜜罐(VM4:3306): 中交互, 记录SQL查询"
+  trace:
+    - "trace_engine: 关联分析, 攻击链重建, 溯源报告"

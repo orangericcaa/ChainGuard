@@ -1,0 +1,12 @@
+version: "3"
+services:
+  wordpress:
+    image: wordpress:6.5.5
+    ports:
+      - "192.168.10.10:8081:80"
+    environment:
+      WORDPRESS_DB_HOST: 192.168.20.10:3306
+      WORDPRESS_DB_USER: webapp
+      WORDPRESS_DB_PASSWORD: webapp123
+      WORDPRESS_DB_NAME: company
+    restart: unless-stopped

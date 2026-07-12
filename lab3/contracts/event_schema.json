@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Lab3 Unified Event",
+  "description": "课题三统一事件契约，所有检测模块必须输出此格式",
+  "type": "object",
+  "required": ["event_id", "ts", "host", "detector", "severity", "message"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "UUID v4"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "演示轮次标识，如 demo-001",
+      "default": "default"
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 时间戳"
+    },
+    "host": {
+      "type": "string",
+      "enum": ["VM1", "VM2", "VM3", "VM4"],
+      "description": "产生事件的节点"
+    },
+    "host_ip": {
+      "type": "string",
+      "description": "节点 IP"
+    },
+    "detector": {
+      "type": "string",
+      "enum": ["suricata_dmz", "suricata_internal", "host_monitor", "web_honeypot", "db_honeypot", "cowrie", "trace_engine", "traffic_analyzer"],
+      "description": "检测来源"
+    },
+    "layer": {
+      "type": "string",
+      "enum": ["network", "host", "honeypot", "trace"],
+      "description": "检测层级"
+    },
+    "attack_type": {
+      "type": "string",
+      "description": "攻击类型: port_scan, sql_injection, xss, brute_force, webshell, lateral_move, data_exfil, file_access, cmd_injection, dir_traversal, unknown"
+    },
+    "attack_phase": {
+      "type": "string",
+      "enum": ["recon", "exploitation", "persistence", "lateral_movement", "exfiltration", "unknown"],
+      "description": "攻击阶段"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "low", "medium", "high", "critical"],
+      "description": "严重级别"
+    },
+    "src_ip": {
+      "type": "string",
+      "description": "攻击源 IP"
+    },
+    "dst_ip": {
+      "type": "string",
+      "description": "目标 IP"
+    },
+    "dst_port": {
+      "type": "integer",
+      "description": "目标端口"
+    },
+    "protocol": {
+      "type": "string",
+      "description": "协议"
+    },
+    "message": {
+      "type": "string",
+      "description": "人类可读的告警描述"
+    },
+    "raw_detail": {
+      "type": "string",
+      "description": "原始 payload 或日志原文"
+    },
+    "mitre_id": {
+      "type": "string",
+      "description": "MITRE ATT&CK 技术 ID"
+    },
+    "evidence_path": {
+      "type": "string",
+      "description": "证据文件路径"
+    },
+    "action_taken": {
+      "type": "string",
+      "description": "自动处置动作"
+    }
+  }
+}
